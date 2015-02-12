@@ -21,6 +21,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import com.ibm.streams.operator.logging.LogLevel;
+import com.ibm.websphere.sib.api.jms.JmsFactoryFactory;
 
 /* This class contains all the connection related information, creating maintaining and closing a connection to the JMSProvider
  * Sending and Receiving JMS messages
@@ -189,6 +190,17 @@ class JMSConnectionHelper {
 		dest = (Destination) jndiContext.lookup(destination);
 
 		return;
+	}
+
+
+	// META addition (JSA).  Uses alternative initialization pathway that avoids JNDI
+	public void createThinClientObjects(String userPrincipal, String userCredential, String destination, 
+			boolean isTopic) throws JMSException {
+		JmsFactoryFactory factory = JmsFactoryFactory.getInstance();
+		this.userPrincipal = userPrincipal;
+		this.userCredential = userCredential;
+		connFactory = factory.createConnectionFactory();
+		dest = isTopic ? factory.createTopic(destination): factory.createQueue(destination);
 	}
 
 	// this subroutine creates the connection, it always verifies if we have a

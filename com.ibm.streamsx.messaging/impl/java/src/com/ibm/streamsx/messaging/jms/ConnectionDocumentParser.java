@@ -64,6 +64,8 @@ class ConnectionDocumentParser {
 	private String userPrincipal;
 	// user Credentials
 	private String userCredential;
+	// META addition (JSA)
+	private boolean isTopic;
 
 	// variables to hold the native schema attributes which are specified in
 	// connection document
@@ -192,6 +194,20 @@ class ConnectionDocumentParser {
 		return msgClass;
 
 	}
+	
+	// META additions (JSA)
+
+	// getter for topic / queue discriminator for thin client
+	public boolean isTopic() {
+		return isTopic;
+	}
+	
+	// indicates whether the provider is a thin client
+	public boolean isThinClient() {
+		return "*thinclient*".equals(initialContextFactory);
+	}
+	
+	// End META additions
 
 	// subroutine to parse and validate the connection document
 	// called by both the JMSSink and JMSSource
@@ -361,6 +377,11 @@ class ConnectionDocumentParser {
 				// get the delivery mode if its present
 				if (dest.getAttributes().getNamedItem("delivery_mode") != null) {
 					deliveryMode = dest.getAttributes().getNamedItem("delivery_mode").getNodeValue();
+				}
+				// META addition (JSA)
+				if (dest.getAttributes().getNamedItem("kind") != null) {
+					String kind = dest.getAttributes().getNamedItem("kind").getNodeValue();
+					isTopic = kind.equalsIgnoreCase("topic");
 				}
 				// Extract the message class
 				msgClass = MessageClass.valueOf(messageClass.trim());

@@ -340,6 +340,13 @@ public class JMSSink extends AbstractOperator {
 				reconnectionBound, period, true,
 				connectionDocumentParser.getDeliveryMode(),
 				nReconnectionAttempts, nFailedInserts, logger);
+		// META addition (JSA):
+		if (connectionDocumentParser.isThinClient()) 
+			jmsConnectionHelper.createThinClientObjects(connectionDocumentParser.getUserPrincipal(),
+					connectionDocumentParser.getUserCredential(),
+					connectionDocumentParser.getDestination(), 
+					connectionDocumentParser.isTopic());
+		else
 		jmsConnectionHelper.createAdministeredObjects(
 				connectionDocumentParser.getInitialContextFactory(),
 				connectionDocumentParser.getProviderURL(),
