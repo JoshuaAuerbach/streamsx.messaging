@@ -21,6 +21,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import com.ibm.streams.operator.logging.LogLevel;
+import com.ibm.websphere.sib.api.jms.JmsConnectionFactory;
 import com.ibm.websphere.sib.api.jms.JmsFactoryFactory;
 
 /* This class contains all the connection related information, creating maintaining and closing a connection to the JMSProvider
@@ -65,7 +66,10 @@ class JMSConnectionHelper {
 	// createAdministeredObjects and used for connection
 	private String userPrincipal = null;
 	private String userCredential = null;
-	
+	// META additions (JSA)
+	private boolean thinClient = false;
+	private boolean isTopic = false;
+	// end META additions
 
 	// procedure to detrmine if there exists a valid connection or not
 	private boolean isConnectValid() {
@@ -151,6 +155,12 @@ class JMSConnectionHelper {
 		createConnection();
 		return;
 	}
+	
+	// META addition (JSA): Method to set the thin Client property 
+	public void setThinClientExtras(boolean thinClient, boolean isTopic) {
+		this.thinClient = thinClient;
+		this.isTopic = isTopic;
+	}
 
 	// this subroutine creates the initial jndi context by taking the mandatory
 	// and optional parameters
@@ -158,10 +168,19 @@ class JMSConnectionHelper {
 	public void createAdministeredObjects(String initialContextFactory,
 			String providerURL, String userPrincipal, String userCredential,
 			String connectionFactory, String destination)
-			throws NamingException {
+			throws NamingException, JMSException { // JMSException added for META (JSA)
 
 		this.userPrincipal = userPrincipal;
 		this.userCredential = userCredential;
+		
+		// META addition (JSA)
+		if (thinClient) {
+			// The initial context factory was abused as an indicator of thinclient
+			// The providerURL was abused to provide the bus name
+			// The connection factory name was abused to provide the provider endpoints
+			createObjectsForThinClient(providerURL, connectionFactory, destination);
+			return;
+		}
 		
 		// Create a JNDI API InitialContext object if none exists
 		// create a properties object and add all the mandatory and optional
@@ -192,14 +211,13 @@ class JMSConnectionHelper {
 		return;
 	}
 
-
-	// META addition (JSA).  Uses alternative initialization pathway that avoids JNDI
-	public void createThinClientObjects(String userPrincipal, String userCredential, String destination, 
-			boolean isTopic) throws JMSException {
+	// META addition (JSA) initialization for thin client profile
+	private void createObjectsForThinClient(String busName, String providerEndpoints, String destination) throws JMSException {
 		JmsFactoryFactory factory = JmsFactoryFactory.getInstance();
-		this.userPrincipal = userPrincipal;
-		this.userCredential = userCredential;
-		connFactory = factory.createConnectionFactory();
+		JmsConnectionFactory  cf = factory.createConnectionFactory();
+		cf.setBusName(busName);
+		cf.setProviderEndpoints(providerEndpoints);
+		connFactory = cf;
 		dest = isTopic ? factory.createTopic(destination): factory.createQueue(destination);
 	}
 

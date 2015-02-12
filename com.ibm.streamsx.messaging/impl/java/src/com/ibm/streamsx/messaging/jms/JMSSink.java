@@ -341,12 +341,9 @@ public class JMSSink extends AbstractOperator {
 				connectionDocumentParser.getDeliveryMode(),
 				nReconnectionAttempts, nFailedInserts, logger);
 		// META addition (JSA):
-		if (connectionDocumentParser.isThinClient()) 
-			jmsConnectionHelper.createThinClientObjects(connectionDocumentParser.getUserPrincipal(),
-					connectionDocumentParser.getUserCredential(),
-					connectionDocumentParser.getDestination(), 
-					connectionDocumentParser.isTopic());
-		else
+		jmsConnectionHelper.setThinClientExtras(connectionDocumentParser.isThinClient(), 
+				connectionDocumentParser.isTopic());
+		// end META addition
 		jmsConnectionHelper.createAdministeredObjects(
 				connectionDocumentParser.getInitialContextFactory(),
 				connectionDocumentParser.getProviderURL(),
