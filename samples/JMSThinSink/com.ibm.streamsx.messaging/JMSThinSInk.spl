@@ -1,0 +1,28 @@
+namespace com.ibm.streamsx.messaging;
+
+use com.ibm.streamsx.messaging.jms::* ;
+
+composite JMSThinSInk {
+type Transaction =
+    ustring account,
+    ustring countryCode,
+    float64 amount;
+
+	graph
+
+		stream<Transaction> inputData = FileSource()
+		{
+			param
+				file : "data.csv" ;
+				format : csv ;
+				initDelay : 1.0 ;
+		}
+
+		() as mySink = JMSSink(inputData)
+		{
+			param
+				connection : "thinclient" ;
+				access : "access_thinclient" ;
+		}
+
+}
