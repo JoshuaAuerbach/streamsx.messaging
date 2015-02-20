@@ -5,9 +5,13 @@
 package com.ibm.streamsx.messaging.jms;
 
 import com.ibm.streams.operator.metrics.Metric;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -20,9 +24,8 @@ import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import com.ibm.streams.operator.logging.LogLevel;
-import com.ibm.websphere.sib.api.jms.JmsConnectionFactory;
-import com.ibm.websphere.sib.api.jms.JmsFactoryFactory;
 
 /* This class contains all the connection related information, creating maintaining and closing a connection to the JMSProvider
  * Sending and Receiving JMS messages
@@ -69,6 +72,8 @@ class JMSConnectionHelper {
 	// META additions (JSA)
 	private boolean thinClient = false;
 	private boolean isTopic = false;
+	private static final String JmsFactoryFactory = "com.ibm.websphere.sib.api.jms.JmsFactoryFactory";
+	private static final String JmsConnectionFactory = "com.ibm.websphere.sib.api.jms.JmsConnectionFactory";
 	// end META additions
 
 	// procedure to detrmine if there exists a valid connection or not
@@ -168,7 +173,7 @@ class JMSConnectionHelper {
 	public void createAdministeredObjects(String initialContextFactory,
 			String providerURL, String userPrincipal, String userCredential,
 			String connectionFactory, String destination)
-			throws NamingException, JMSException { // JMSException added for META (JSA)
+			throws NamingException, Exception { // Exception added for META (JSA)
 
 		this.userPrincipal = userPrincipal;
 		this.userCredential = userCredential;
@@ -212,13 +217,40 @@ class JMSConnectionHelper {
 	}
 
 	// META addition (JSA) initialization for thin client profile
-	private void createObjectsForThinClient(String busName, String providerEndpoints, String destination) throws JMSException {
-		JmsFactoryFactory factory = JmsFactoryFactory.getInstance();
-		JmsConnectionFactory  cf = factory.createConnectionFactory();
-		cf.setBusName(busName);
-		cf.setProviderEndpoints(providerEndpoints);
-		connFactory = cf;
-		dest = isTopic ? factory.createTopic(destination): factory.createQueue(destination);
+	// Some operations are done reflectively because the thin client jar is not expected to be present at build time.
+	// If they are not present at runtime that will be a runtime error.  Equivalent non-reflective code:
+	// 	JmsFactoryFactory factory = JmsFactoryFactory.getInstance();
+	//	JmsConnectionFactory  cf = factory.createConnectionFactory();
+	//	cf.setBusName(busName);
+	//	cf.setProviderEndpoints(providerEndpoints);
+	//	connFactory = cf;
+	//	dest = isTopic ? factory.createTopic(destination): factory.createQueue(destination);
+
+	private void createObjectsForThinClient(String busName, String providerEndpoints, String destination) 
+			throws ClassNotFoundException, NoSuchMethodException, SecurityException,
+			IllegalAccessException, InstantiationException, IllegalArgumentException, InvocationTargetException {
+		/* Get the necessary meta-objects */
+		Class<?> factoryClass = Class.forName(JmsFactoryFactory);
+		Method getInstance = factoryClass.getDeclaredMethod("getInstance");
+		getInstance.setAccessible(true);
+		Method createConnectionFactory = factoryClass.getDeclaredMethod("createConnectionFactory");
+		createConnectionFactory.setAccessible(true);
+		String createDestinationMethod = isTopic ? "createTopic" : "createQueue";
+		Method createDestination = factoryClass.getDeclaredMethod(createDestinationMethod, String.class);
+		createDestination.setAccessible(true);
+		Class<?> connectorClass = Class.forName(JmsConnectionFactory);
+		Method setBusName = connectorClass.getDeclaredMethod("setBusName", String.class);
+		setBusName.setAccessible(true);
+		Method setProviderEndpoints = connectorClass.getDeclaredMethod("setProviderEndpoints", String.class);
+		setProviderEndpoints.setAccessible(true);
+
+		/* Do the initialization */
+		Object factory = getInstance.invoke(null);
+		Object cf = createConnectionFactory.invoke(factory);
+		setBusName.invoke(cf, busName);
+		setProviderEndpoints.invoke(cf, providerEndpoints);
+		connFactory = (ConnectionFactory) cf;
+		dest = (Destination) createDestination.invoke(factory, destination);
 	}
 
 	// this subroutine creates the connection, it always verifies if we have a
