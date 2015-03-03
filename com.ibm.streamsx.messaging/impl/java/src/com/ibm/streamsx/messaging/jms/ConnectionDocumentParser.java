@@ -64,8 +64,11 @@ class ConnectionDocumentParser {
 	private String userPrincipal;
 	// user Credentials
 	private String userCredential;
-	// META addition (JSA)
+	// META additions (JSA)
 	private boolean isTopic;
+	private String doctag;
+	private String namespace;
+	// end additions
 
 	// variables to hold the native schema attributes which are specified in
 	// connection document
@@ -196,7 +199,6 @@ class ConnectionDocumentParser {
 	}
 	
 	// META additions (JSA)
-
 	// getter for topic / queue discriminator for thin client
 	public boolean isTopic() {
 		return isTopic;
@@ -207,6 +209,15 @@ class ConnectionDocumentParser {
 		return "*thinclient*".equals(initialContextFactory);
 	}
 	
+	// return the doctag if provided as part of the native schema
+	public String getDoctag() {
+		return doctag;
+	}
+
+	// return the namespace if provided as part of the native schema
+	public String getNamespace() {
+		return namespace;
+	}
 	// End META additions
 
 	// subroutine to parse and validate the connection document
@@ -458,12 +469,21 @@ class ConnectionDocumentParser {
 
 		// get the attribute list
 		NodeList attrList = nativeSchema.getChildNodes();
+		// META additions (JSA)
+		Node docTagNode = nativeSchema.getAttributes().getNamedItem("doctag");
+		doctag = docTagNode == null ? null : docTagNode.getNodeValue();
+		Node namespaceNode = nativeSchema.getAttributes().getNamedItem("namespace");
+		namespace = namespaceNode == null ? null : namespaceNode.getNodeValue();
 
 		for (int i = 0; i < attrList.getLength(); i++) {
 			if (attrList.item(i).hasAttributes()) {
 				// extract the native schema attribute name, type and length
 				String nativeAttrName = (attrList.item(i).getAttributes().getNamedItem("name").getNodeValue());
 				String nativeAttrType = (attrList.item(i).getAttributes().getNamedItem("type").getNodeValue());
+				// META addition (JSA)
+				Node renameNode = attrList.item(i).getAttributes().getNamedItem("rename");
+				String rename = renameNode == null ? null : renameNode.getNodeValue();
+				// End addition.
 				int nativeAttrLength;
 
 				// if length is not specified for that parameter
@@ -651,8 +671,9 @@ class ConnectionDocumentParser {
 					currentObject = new NativeSchema(nativeAttrName, NativeTypes.valueOf(nativeAttrType),
 							nativeAttrLength, false);
 				} else {
+					// META change (JSA): provide the rename attribute (implies that attribute is present in schema)
 					currentObject = new NativeSchema(nativeAttrName, NativeTypes.valueOf(nativeAttrType),
-							nativeAttrLength, true);
+							nativeAttrLength, rename);
 				}
 				nativeSchemaObjects.add(currentObject);
 

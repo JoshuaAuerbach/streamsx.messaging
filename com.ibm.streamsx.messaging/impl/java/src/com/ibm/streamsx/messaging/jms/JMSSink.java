@@ -391,10 +391,13 @@ public class JMSSink extends AbstractOperator {
 
 			break;
 		case xml:
+			// META addition: last two arguments (JSA)
 			mhandler = new XMLTextMessageHandler(
 					connectionDocumentParser.getNativeSchemaObjects(),
-					getInput(0).getName(), nTruncatedInserts);
-
+					getInput(0).getName(), nTruncatedInserts,
+					connectionDocumentParser.getDoctag(),
+					connectionDocumentParser.getNamespace());
+			
 			break;
 		case text:
 			mhandler = new TextMessageHandler(connectionDocumentParser.getNativeSchemaObjects());

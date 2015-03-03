@@ -109,9 +109,14 @@
                                 <attribute name="name" use="required" type="NCName"/>
                                 <attribute name="type" use="required" type="st:native_data_type"/>
                                 <attribute name="length" use="optional" type="integer"/>
+                                <!-- META addition (JSA) -->
+                                <attribute name="rename" use="optional" type="NCName"/>
 			         </complexType>
                             </element>
                           </sequence>
+                          <!-- META additions (JSA) -->
+                          <attribute name="doctag" use="optional" type="NCName"/>
+                          <attribute name="namespace" use="optional" type="string"/>
                          </complexType>
                       </element>
                     </sequence>
