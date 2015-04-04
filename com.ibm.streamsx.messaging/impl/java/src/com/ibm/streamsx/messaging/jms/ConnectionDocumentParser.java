@@ -64,11 +64,11 @@ class ConnectionDocumentParser {
 	private String userPrincipal;
 	// user Credentials
 	private String userCredential;
-	// META additions (JSA)
+	// support for SIB thin client (no JNDI, have to distinguish topic and queue)
 	private boolean isTopic;
+	// support for renaming in XMLTextMessageHandler
 	private String doctag;
 	private String namespace;
-	// end additions
 
 	// variables to hold the native schema attributes which are specified in
 	// connection document
@@ -198,13 +198,12 @@ class ConnectionDocumentParser {
 
 	}
 	
-	// META additions (JSA)
-	// getter for topic / queue discriminator for thin client
+	// getter for topic / queue discriminator for SIB thin client
 	public boolean isTopic() {
 		return isTopic;
 	}
 	
-	// indicates whether the provider is a thin client
+	// indicates whether the provider is a SIB thin client
 	public boolean isThinClient() {
 		return "*thinclient*".equals(initialContextFactory);
 	}
@@ -218,7 +217,6 @@ class ConnectionDocumentParser {
 	public String getNamespace() {
 		return namespace;
 	}
-	// End META additions
 
 	// subroutine to parse and validate the connection document
 	// called by both the JMSSink and JMSSource
@@ -389,7 +387,6 @@ class ConnectionDocumentParser {
 				if (dest.getAttributes().getNamedItem("delivery_mode") != null) {
 					deliveryMode = dest.getAttributes().getNamedItem("delivery_mode").getNodeValue();
 				}
-				// META addition (JSA)
 				if (dest.getAttributes().getNamedItem("kind") != null) {
 					String kind = dest.getAttributes().getNamedItem("kind").getNodeValue();
 					isTopic = kind.equalsIgnoreCase("topic");
@@ -469,7 +466,7 @@ class ConnectionDocumentParser {
 
 		// get the attribute list
 		NodeList attrList = nativeSchema.getChildNodes();
-		// META additions (JSA)
+		// Extra support for renaming with XML message type
 		Node docTagNode = nativeSchema.getAttributes().getNamedItem("doctag");
 		doctag = docTagNode == null ? null : docTagNode.getNodeValue();
 		Node namespaceNode = nativeSchema.getAttributes().getNamedItem("namespace");
@@ -480,10 +477,9 @@ class ConnectionDocumentParser {
 				// extract the native schema attribute name, type and length
 				String nativeAttrName = (attrList.item(i).getAttributes().getNamedItem("name").getNodeValue());
 				String nativeAttrType = (attrList.item(i).getAttributes().getNamedItem("type").getNodeValue());
-				// META addition (JSA)
+				// Extra support for renaming
 				Node renameNode = attrList.item(i).getAttributes().getNamedItem("rename");
 				String rename = renameNode == null ? null : renameNode.getNodeValue();
-				// End addition.
 				int nativeAttrLength;
 
 				// if length is not specified for that parameter
@@ -671,7 +667,6 @@ class ConnectionDocumentParser {
 					currentObject = new NativeSchema(nativeAttrName, NativeTypes.valueOf(nativeAttrType),
 							nativeAttrLength, false);
 				} else {
-					// META change (JSA): provide the rename attribute (implies that attribute is present in schema)
 					currentObject = new NativeSchema(nativeAttrName, NativeTypes.valueOf(nativeAttrType),
 							nativeAttrLength, rename);
 				}

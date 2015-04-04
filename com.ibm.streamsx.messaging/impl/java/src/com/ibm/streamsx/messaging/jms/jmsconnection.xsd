@@ -44,7 +44,6 @@
     </restriction>
   </simpleType>
 
-  <!-- META addition (JSA) -->
   <simpleType name="JMS_destination_kind">
     <restriction base="string">
       <enumeration value="queue"/>
@@ -90,7 +89,6 @@
                           <attribute name="identifier" use="required" type="string"/>
                           <attribute name="message_class" use="required" type="st:JMS_message_class"/>
                          <attribute name="delivery_mode" use="optional" type="st:JMS_delivery_mode"/>
-                         <!-- META addition (JSA) -->
                          <attribute name="kind" use="optional" type="st:JMS_destination_kind"/>
                         </complexType>
                       </element>
@@ -109,12 +107,10 @@
                                 <attribute name="name" use="required" type="NCName"/>
                                 <attribute name="type" use="required" type="st:native_data_type"/>
                                 <attribute name="length" use="optional" type="integer"/>
-                                <!-- META addition (JSA) -->
                                 <attribute name="rename" use="optional" type="NCName"/>
 			         </complexType>
                             </element>
                           </sequence>
-                          <!-- META additions (JSA) -->
                           <attribute name="doctag" use="optional" type="NCName"/>
                           <attribute name="namespace" use="optional" type="string"/>
                          </complexType>

@@ -69,12 +69,11 @@ class JMSConnectionHelper {
 	// createAdministeredObjects and used for connection
 	private String userPrincipal = null;
 	private String userCredential = null;
-	// META additions (JSA)
+	// SIB thin client support
 	private boolean thinClient = false;
 	private boolean isTopic = false;
 	private static final String JmsFactoryFactory = "com.ibm.websphere.sib.api.jms.JmsFactoryFactory";
 	private static final String JmsConnectionFactory = "com.ibm.websphere.sib.api.jms.JmsConnectionFactory";
-	// end META additions
 
 	// procedure to detrmine if there exists a valid connection or not
 	private boolean isConnectValid() {
@@ -161,7 +160,7 @@ class JMSConnectionHelper {
 		return;
 	}
 	
-	// META addition (JSA): Method to set the thin Client property 
+	// Method to set the SIB thin Client boolean properties
 	public void setThinClientExtras(boolean thinClient, boolean isTopic) {
 		this.thinClient = thinClient;
 		this.isTopic = isTopic;
@@ -173,16 +172,15 @@ class JMSConnectionHelper {
 	public void createAdministeredObjects(String initialContextFactory,
 			String providerURL, String userPrincipal, String userCredential,
 			String connectionFactory, String destination)
-			throws NamingException, Exception { // Exception added for META (JSA)
+			throws Exception { 
 
 		this.userPrincipal = userPrincipal;
 		this.userCredential = userCredential;
 		
-		// META addition (JSA)
 		if (thinClient) {
-			// The initial context factory was abused as an indicator of thinclient
-			// The providerURL was abused to provide the bus name
-			// The connection factory name was abused to provide the provider endpoints
+			// The initial context factory has a special value to indicate the SIB thinclient
+			// The providerURL is overloaded in this case to provide the bus name
+			// The connection factory name is overloaded in this case to provide the provider endpoints
 			createObjectsForThinClient(providerURL, connectionFactory, destination);
 			return;
 		}
@@ -216,7 +214,7 @@ class JMSConnectionHelper {
 		return;
 	}
 
-	// META addition (JSA) initialization for thin client profile
+	// Initialization for SIB thin client profile
 	// Some operations are done reflectively because the thin client jar is not expected to be present at build time.
 	// If they are not present at runtime that will be a runtime error.  Equivalent non-reflective code:
 	// 	JmsFactoryFactory factory = JmsFactoryFactory.getInstance();

@@ -17,24 +17,23 @@ public class NativeSchema {
 	// the stream schema or not
 	// if present set to true, fasle otherwise.
 	private final boolean isPresentInStreamSchema;
-	// META addition (JSA)
 	// variable to hold the optional 'rename' (external name that differs from that in the stream schema).
 	// For backward compatibility, if isPresentInStreamSchema is false, the name field is assumed to hold an
 	// external name.  Otherwise, if rename is null, the internal and external name is assumed to be the same.
 	// If rename is non-null it denotes the external name while name denotes the streams name.
 	private final String rename;
 
+	// Constructor without rename
 	public NativeSchema(String name, NativeTypes type, int length,
 			boolean isPresentInStreamSchema) {
 		this.name = name;
 		this.type = type;
 		this.length = length;
 		this.isPresentInStreamSchema = isPresentInStreamSchema;
-		// META addition (JSA)
 		this.rename = null;
 	}
 
-	// META addition (JSA) alternate constructor
+	// Constructor providing rename
 	public NativeSchema(String name, NativeTypes type, int length,
 			String rename) {
 		this.name = name;
@@ -61,7 +60,6 @@ public class NativeSchema {
 		return isPresentInStreamSchema;
 	}
 
-	// META addition (JSA)
 	public String getRename() {
 		return rename;
 	}

@@ -326,10 +326,8 @@ public class JMSSource extends ProcessTupleProducer {
 				reconnectionBound, period, false,
 				connectionDocumentParser.getDeliveryMode(),
 				nReconnectionAttempts, logger);
-		// META addition (JSA):
 		jmsConnectionHelper.setThinClientExtras(connectionDocumentParser.isThinClient(), 
 				connectionDocumentParser.isTopic());
-		// end META addition
 		jmsConnectionHelper.createAdministeredObjects(
 				connectionDocumentParser.getInitialContextFactory(),
 				connectionDocumentParser.getProviderURL(),

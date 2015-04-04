@@ -34,7 +34,6 @@ public class JmsClasspathUtil {
 			}
 		}
 		
-		// META addition (JSA)
 		String THIN_HOME = System.getenv("STREAMS_MESSAGING_THINCLIENT_HOME");
 		if (THIN_HOME != null) {
 			String javaLib = THIN_HOME + "/*";

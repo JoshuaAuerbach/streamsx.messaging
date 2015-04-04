@@ -30,7 +30,7 @@ class XMLTextMessageHandler extends BaseXMLMessageHandler {
 	// the document builder
 	private DocumentBuilder documentBuilder;
 
-	// META additions (JSA)
+	// Rename support
 	private String doctag;
 	private String namespace;
 
@@ -46,7 +46,6 @@ class XMLTextMessageHandler extends BaseXMLMessageHandler {
 	}
 
 	// constructor
-	// META addition: last two arguments (JSA)
 	public XMLTextMessageHandler(List<NativeSchema> nativeSchemaObjects,
 			String eventName, Metric nTruncatedInserts, String doctag, String namespace)
 			throws ParserConfigurationException,
@@ -79,7 +78,7 @@ class XMLTextMessageHandler extends BaseXMLMessageHandler {
 		}
 		
 		boolean isTruncated;
-		// META addition (JSA).  Use alternative "advanced" path if doctag is provided
+		// Presence of doctag is signal to do the "advanced" case.  Otherwise, processing is as before.
 		if (doctag != null) {
 			isTruncated = advancedDocumentCompletion(doctag, namespace, document, tuple);
 		} else {
@@ -193,7 +192,7 @@ class XMLTextMessageHandler extends BaseXMLMessageHandler {
 
 	}// convert end
 
-	// META addition.  Complete the document when a specific target document tag and namespace is targetted
+	// Complete the document when a specific target document tag and namespace is targetted.
 	// This capability overlaps with the possibility of using an XSL to transform a generic document.  However, it's
 	// more straightforward when the target document has a flat structure and the advanced capabilities of XSL are not
 	// needed.

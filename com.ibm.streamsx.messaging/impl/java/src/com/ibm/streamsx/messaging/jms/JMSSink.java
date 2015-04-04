@@ -340,10 +340,8 @@ public class JMSSink extends AbstractOperator {
 				reconnectionBound, period, true,
 				connectionDocumentParser.getDeliveryMode(),
 				nReconnectionAttempts, nFailedInserts, logger);
-		// META addition (JSA):
 		jmsConnectionHelper.setThinClientExtras(connectionDocumentParser.isThinClient(), 
 				connectionDocumentParser.isTopic());
-		// end META addition
 		jmsConnectionHelper.createAdministeredObjects(
 				connectionDocumentParser.getInitialContextFactory(),
 				connectionDocumentParser.getProviderURL(),
@@ -391,7 +389,6 @@ public class JMSSink extends AbstractOperator {
 
 			break;
 		case xml:
-			// META addition: last two arguments (JSA)
 			mhandler = new XMLTextMessageHandler(
 					connectionDocumentParser.getNativeSchemaObjects(),
 					getInput(0).getName(), nTruncatedInserts,
